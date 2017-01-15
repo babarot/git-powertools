@@ -1,0 +1,24 @@
+#!/bin/bash
+
+case $# in
+    0)
+        echo "too few arguments" >&2
+        exit 1
+        ;;
+    1)
+        git grep --color "$1"
+        exit $?
+        ;;
+    *)
+        old="$1" new="$2"
+        shift 2
+        git grep --name-only "$old" |
+        while read f
+        do
+            cat "$f" | (
+            rm "$f"
+            sed "s/$old/$new/g" >"$f"
+            )
+        done
+        ;;
+esac

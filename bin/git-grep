@@ -1,0 +1,43 @@
+#!/bin/bash
+
+is_fzy=false
+is_vim=false
+args=()
+
+while (( $# > 0 ))
+do
+    case "$1" in
+        --fzy)
+            is_fzy=true
+            ;;
+        --vim)
+            is_vim=true
+            ;;
+        -V|--fv)
+            is_fzy=true
+            is_vim=true
+            ;;
+        *)
+            args+=("$1")
+            ;;
+    esac
+    shift
+done
+
+git grep -n --color "${args[@]}" |
+
+if $is_fzy; then
+    selected="$(fzy | perl -pe 's/\e\[?.*?[\@-~]//g')"
+    if [[ -z $selected ]]; then
+        exit 0
+    fi
+    if $is_vim; then
+        f="$(echo "$selected" | cut -d: -f1)"
+        n="$(echo "$selected" | cut -d: -f2)"
+        </dev/tty >/dev/tty vim "+$n" "$f"
+    else
+        echo "$selected"
+    fi
+else
+    less -F -R
+fi
